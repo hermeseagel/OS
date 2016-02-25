@@ -6,26 +6,45 @@ AIX_OS_Data_collect() {
 	logfile=`hostname`'-AIX.log'
 	echo 'Saving Logfile in' $dest/$logfile
 	echo "[OS Version]" `oslevel -s` > $dest/$logfile
+	echo "[/OS Version]" > $dest/$logfile
+
 	echo "[Hardward Infomation] " >> $dest/$logfile
 	prtconf >>  $dest/$logfile
+	echo "[/Hardward Infomation] " >> $dest/$logfile
 	echo "[Current PVS]"
 	lspv >> $dest/$logfile 
-	echo "[Current VGS]"
+	echo "[/Current PVS]" >> $dest/$logfile
+	echo "[Current VGS]" >> $dest/$logfile
 	lsvg >> $dest/$logfile
-	echo '[VG PP size]' 
+	echo "[/Current VGS]" >> $dest/$logfile
+	echo '[VG PP size ]' >> $dest/$logfile
 	vgs=`lsvg`
+	
+	
 	for vg in $vgs
 	do 
-		echo "$vg:" `lsvg $vg | grep "PP SIZE" | awk '{ print $(NF-1)":"$(NF) }' `>> $dest/$logfile
-		
-		echo "$vg's lvs:" `lsvg $vg ` >> $dest/$logfile
+		echo "$vg PPSIZE:" `lsvg $vg | grep "PP SIZE" | awk '{ print $(NF-1)":"$(NF) }' `>> $dest/$logfile
+		echo '[/VG PP size]'>> $dest/$logfile
+		echo "[$vg's lvs:]"   >> $dest/$logfile
+		lsvg -l $vg >> $dest/$logfile
+		echo "[/$vg's lvs:]"   >> $dest/$logfile
 	done
-	echo "{Coollect System Envirment Varaibes}" >> $dest/$logfile
+	 
+	echo "[Coollect System Envirment Varaibes]" >> $dest/$logfile
 	echo "TIMEZONE:$TZ"  >> $dest/$logfile
 	echo "LANGUAGE:$LANG" >>  $dest/$logfile
 	echo "collect NETWORKINFO:" >> $dest/$logfile
 	ifconfig -a >>  $dest/$logfile
-	
+	echo "[collect fiber info]" >> $dest/$logfile
+	fcs=`lsdev -C | grep fc | grep Available|awk '{ print $1}' `
+	for fc in $fcs 
+	do 
+		echo "$fc WWN:" `lscfg -vl $fc | grep "Network Address"| awk -F. '{ print $(NF) }' ` >> $dest/$logfile
+	done
+	echo "[/ Coollect System Envirment Varaibes]" >> $dest/$logfile
+	echo "[collect all filesystems]" >> $dest/$logfile
+	df -m >> $dest/$logfile
+	echo "[/collect all filesystems]" >> $dest/$logfile
 }
 Linux_OS_Data_collect(){
 	dest='/tmp'
@@ -83,6 +102,7 @@ SUN_OS_Data_collect(){
 	elif [ `grep -i 'ufs' /etc/vfstab | wc -l ` != 0 ] ; then
 	 echo '[Ufs usage]' >> $dest/$logfile 
 	 df -h  >> $dest/$logfile 
+	 echo '[/Ufs usage]' >> $dest/$logfile
 	fi
 	echo '[Network infomation]' >> $dest/$logfile
 	ifconfig -a >> $dest/$logfile
