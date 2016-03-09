@@ -88,10 +88,14 @@ Linux_OS_Data_collect(){
 		done
 		
 	fi
-	fc_flag=`systool -c fc_host | awk '{ print $1 }'`
-	if [ "$fc_flag" != "Error" ] ; then 
-		systool -c fc_host |grep Class |grep -v fc_host |awk '{print $4}' |cut -d '"' -f 2  >> $dest/$logfile 
-	fi
+		fc_exist=`find / -name 'systool'`
+	if [ $fc_exist != '' ] ; then 
+		fc_flag=`systool -c fc_host | awk '{ print $1 }'`
+		if [ "$fc_flag" != "Error" ] ; then 
+			systool -c fc_host |grep Class |grep -v fc_host |awk '{print $4}' |cut -d '"' -f 2  >> $dest/$logfile 
+		fi
+	#elif 
+
 }
 SUN_OS_Data_collect(){
 	dest='/tmp'
@@ -127,6 +131,8 @@ SUN_OS_Data_collect(){
 	echo '[Network infomation]' >> $dest/$logfile
 	ifconfig -a >> $dest/$logfile
 	echo '[/Network infomation]' >> $dest/$logfile
+	echo  '[]'
+	
 }
 
 ostype=`uname`
